@@ -1,3 +1,8 @@
+// Sanitize phone number - keep only digits, +, *, #
+function sanitizePhoneNumber(input) {
+  return input.replace(/[^\d+*#]/g, '');
+}
+
 // Get config from storage
 function getConfig() {
   return new Promise((resolve) => {
@@ -45,7 +50,14 @@ async function dialNumber(number) {
     return false;
   }
 
-  let url = `${config.http}://${config.username}:${encodeURIComponent(config.password)}@${config.address}/servlet?key=number=${encodeURIComponent(number)}`;
+  // Sanitize phone number
+  const cleanNumber = sanitizePhoneNumber(number);
+  if (!cleanNumber) {
+    updateStatus('Ungültige Nummer', 'error');
+    return false;
+  }
+
+  let url = `${config.http}://${config.username}:${encodeURIComponent(config.password)}@${config.address}/servlet?key=number=${encodeURIComponent(cleanNumber)}`;
 
   if (config.outgoingUri) {
     url += `&outgoing_uri=${encodeURIComponent(config.outgoingUri)}`;
@@ -56,7 +68,7 @@ async function dialNumber(number) {
     setTimeout(() => chrome.tabs.remove(tab.id), 1000);
   });
 
-  updateStatus('Anruf: ' + number, 'success');
+  updateStatus('Anruf: ' + cleanNumber, 'success');
   return true;
 }
 
