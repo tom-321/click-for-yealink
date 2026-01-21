@@ -6,11 +6,12 @@ function save_options() {
   var http = document.getElementById('http').value;
   var country = document.getElementById('country').value;
   var address = document.getElementById('address').value || '';
+  var outgoingUri = document.getElementById('outgoingUri').value || '';
 
-  let saveSet = { username, enableTimeout, enableClickHandler, http, country, address };
+  let saveSet = { username, enableTimeout, enableClickHandler, http, country, address, outgoingUri };
 
   if (password) {
-    saveSet = { username, password, enableTimeout, enableClickHandler, http, country, address };
+    saveSet = { username, password, enableTimeout, enableClickHandler, http, country, address, outgoingUri };
   }
 
   chrome.storage.sync.set(saveSet, function () {
@@ -31,7 +32,8 @@ function restore_options() {
     enableClickHandler: true,
     http: 'http',
     country: 'BE',
-    address: ''
+    address: '',
+    outgoingUri: ''
   }, function (items) {
     document.getElementById('username').value = items.username;
     document.getElementById('enableTimeout').checked = items.enableTimeout;
@@ -39,6 +41,7 @@ function restore_options() {
     document.getElementById('http').value = items.http;
     document.getElementById('country').value = items.country;
     document.getElementById('address').value = items.address;
+    document.getElementById('outgoingUri').value = items.outgoingUri;
   });
 }
 

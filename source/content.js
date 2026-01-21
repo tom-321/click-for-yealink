@@ -322,5 +322,9 @@ function getAllStorageSyncData() {
 }
 
 function callableUri(config, number) {
-  return `${config.http}://${config.username}:${encodeURIComponent(config.password)}@${config.address}/servlet?key=number=${encodeURIComponent(number)}`;
+  let url = `${config.http}://${config.username}:${encodeURIComponent(config.password)}@${config.address}/servlet?key=number=${encodeURIComponent(number)}`;
+  if (config.outgoingUri) {
+    url += `&outgoing_uri=${encodeURIComponent(config.outgoingUri)}`;
+  }
+  return url;
 }

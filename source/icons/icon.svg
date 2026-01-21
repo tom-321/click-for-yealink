@@ -1,0 +1,34 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hintergrund: Yealink Corporate Blue -->
+  <rect x="0" y="0" width="512" height="512" rx="110" ry="110" fill="#0073e6"/>
+  
+  <!-- Gemeinsame Stil-Einstellungen für alle Linien -->
+  <g fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- 1. Der Telefonhörer (Links) -->
+    <!-- Gezeichnet als klassische Silhouette: Hörmuschel oben, Griff, Sprechmuschel unten -->
+    <path d="M 160 130 
+             C 120 130, 120 180, 160 180 
+             L 180 190
+             C 200 250, 200 300, 180 360
+             L 160 370
+             C 120 370, 120 420, 160 420
+             S 230 400, 250 350
+             C 280 250, 280 200, 250 150
+             S 200 130, 160 130 Z" />
+
+    <!-- 2. Das 'Y' (Rechts) -->
+    <path d="M 340 150 L 390 240 L 440 150" /> <!-- Die Arme des Y -->
+    <line x1="390" y1="240" x2="390" y2="380" /> <!-- Der Stamm des Y -->
+
+    <!-- 3. Die Telefonschnur (Verbindung) -->
+    <!-- Beginnt unten am Hörer und wendelt sich zum Fuß des Y -->
+    <!-- Hellblau, um sich leicht vom weißen Gerät abzuheben -->
+    <path d="M 160 420 
+             C 180 470, 220 460, 230 420
+             S 270 380, 280 420
+             S 320 460, 330 420
+             S 370 380, 390 380"
+          stroke="#80c4ff" /> 
+  </g>
+</svg>
