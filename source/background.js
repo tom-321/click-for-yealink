@@ -1,4 +1,17 @@
-const { parsePhoneNumber, isValidNumber } = require('libphonenumber-js');
+// Simple phone number validation (replaces libphonenumber-js)
+function isValidPhoneNumber(number) {
+  // Remove all non-digit characters except +
+  const cleaned = number.replace(/[^\d+]/g, '');
+  // Valid if it has 7-15 digits (international standard)
+  const digitCount = cleaned.replace(/\D/g, '').length;
+  return digitCount >= 7 && digitCount <= 15;
+}
+
+// Clean and normalize phone number
+function cleanPhoneNumber(text) {
+  // Remove common formatting characters, keep digits and +
+  return text.replace(/[^\d+]/g, '');
+}
 
 chrome.runtime.onInstalled.addListener((_reason) => {
   chrome.tabs.create({
@@ -24,7 +37,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       let number = '';
 
       if (info.menuItemId === 'selection-call') {
-        number = parsePhoneNumber(info.selectionText, config?.country || 'BE').format('E.164');
+        number = cleanPhoneNumber(info.selectionText);
       } else if (info.menuItemId === 'link-call') {
         if (info.linkUrl.startsWith('tel:')) {
           number = info.linkUrl.substring(4);
@@ -37,7 +50,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
       let isValid = true;
 
-      if (!isValidNumber(number)) {
+      if (!isValidPhoneNumber(number)) {
         isValid = confirm(`The phone number (${number}) you selected isn't a valid number. Would you like to call it anyway?`);
       }
 
