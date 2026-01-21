@@ -11,7 +11,7 @@ function getConfig() {
   });
 }
 
-// Send command to Yealink phone
+// Send command to Yealink phone via background tab
 async function sendCommand(key) {
   const config = await getConfig();
 
@@ -22,21 +22,16 @@ async function sendCommand(key) {
 
   const url = `${config.http}://${config.username}:${encodeURIComponent(config.password)}@${config.address}/servlet?key=${key}`;
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'no-cors'
-    });
-    updateStatus('Befehl gesendet', 'success');
-    return true;
-  } catch (error) {
-    console.error('Command failed:', error);
-    updateStatus('Fehler beim Senden', 'error');
-    return false;
-  }
+  // Open tab in background and close after 1 second (Firefox doesn't allow fetch with embedded credentials)
+  chrome.tabs.create({ url: url, active: false }, (tab) => {
+    setTimeout(() => chrome.tabs.remove(tab.id), 1000);
+  });
+
+  updateStatus('Befehl gesendet: ' + key, 'success');
+  return true;
 }
 
-// Dial a number
+// Dial a number via background tab
 async function dialNumber(number) {
   const config = await getConfig();
 
@@ -56,18 +51,13 @@ async function dialNumber(number) {
     url += `&outgoing_uri=${encodeURIComponent(config.outgoingUri)}`;
   }
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'no-cors'
-    });
-    updateStatus('Anruf gestartet: ' + number, 'success');
-    return true;
-  } catch (error) {
-    console.error('Dial failed:', error);
-    updateStatus('Fehler beim Wählen', 'error');
-    return false;
-  }
+  // Open tab in background and close after 1 second
+  chrome.tabs.create({ url: url, active: false }, (tab) => {
+    setTimeout(() => chrome.tabs.remove(tab.id), 1000);
+  });
+
+  updateStatus('Anruf: ' + number, 'success');
+  return true;
 }
 
 // Update status display

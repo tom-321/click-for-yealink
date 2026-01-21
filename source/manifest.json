@@ -1,6 +1,6 @@
 {
 	"name": "Sippy Click for Yealink",
-	"version": "0.9.0",
+	"version": "0.9.1",
 	"description": "Click and select phone numbers to call them.",
 	"homepage_url": "https://github.com/optimise-group/click-for-yealink",
 	"manifest_version": 2,
@@ -28,7 +28,8 @@
 	},
 	"permissions": [
 		"contextMenus",
-		"storage"
+		"storage",
+		"tabs"
 	],
 	"options_ui": {
 		"chrome_style": false,
