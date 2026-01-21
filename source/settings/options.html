@@ -73,6 +73,16 @@
 					</div>
 
           <div class="mb-3">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="1" id="enableClickHandler">
+							<label class="form-check-label" for="enableClickHandler">
+								Enable click-to-call on phone numbers.
+								<div class="form-text">When enabled, clicking on a phone number will show a dialog to choose how to call. When disabled, only the right-click context menu will work.</div>
+							</label>
+						</div>
+					</div>
+
+          <div class="mb-3">
             <label for="address" class="form-label">Device IP-address</label>
             <input type="text" class="form-control" id="address">
           </div>
@@ -86,7 +96,8 @@
       <div class="col-12 col-md-3">
         <aside class="mt-3">
           <h6>About Sippy Click for Yealink</h6>
-          <p>&copy; Sippy &middot; 2022</p>
+          <p>&copy; Sippy &middot; <span id="copyright-year"></span></p>
+          <p><a href="https://github.com/optimise-group/click-for-yealink" target="_blank">GitHub Repository</a></p>
         </aside>
       </div>
     </div>

@@ -1,5 +1,60 @@
-renderPhoneNumbers();
+console.log('[Sippy Click] Content script loaded');
 injectConfirmDialog();
+
+// Check if click handler is enabled and set up interception
+let clickHandlerEnabled = true; // Default to enabled
+
+getAllStorageSyncData().then(config => {
+  clickHandlerEnabled = config.enableClickHandler !== false; // Default true if not set
+  console.log('[Sippy Click] Click handler enabled:', clickHandlerEnabled);
+});
+
+// Immediately intercept all tel: links before Firefox handles them
+document.addEventListener('click', (e) => {
+  if (!clickHandlerEnabled) {
+    console.log('[Sippy Click] Click handler disabled, ignoring click');
+    return; // Let the default handler work
+  }
+
+  const link = e.target.closest('a[href^="tel:"], a.sippy-click-touched');
+  if (link) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('[Sippy Click] Intercepted click on:', link.href || link.dataset.sippyNumber);
+
+    let phoneNumber;
+    if (link.href && link.href.startsWith('tel:')) {
+      phoneNumber = link.href.substring(4);
+    } else if (link.dataset.sippyNumber) {
+      phoneNumber = link.dataset.sippyNumber;
+    } else {
+      phoneNumber = link.textContent;
+    }
+
+    const displayNumber = link.textContent || phoneNumber;
+    handlePhoneClick(displayNumber, phoneNumber.replace(/[^\d+]/g, ''));
+  }
+}, true); // Use capture phase to intercept before other handlers
+
+async function handlePhoneClick(displayNumber, cleanNumber) {
+  const config = await getAllStorageSyncData();
+  console.log('[Sippy Click] Showing dialog for:', displayNumber);
+  const choice = await showCallConfirmDialog(displayNumber);
+  console.log('[Sippy Click] User choice:', choice);
+
+  if (choice === 'yealink') {
+    const url = callableUri(config, cleanNumber);
+    console.log('[Sippy Click] Opening Yealink:', url);
+    window.open(url, '_blank');
+  } else if (choice === 'default') {
+    // Open with Firefox default handler (tel: link)
+    console.log('[Sippy Click] Opening default handler for:', cleanNumber);
+    window.location.href = 'tel:' + cleanNumber;
+  }
+  // 'cancel' does nothing
+}
+
+renderPhoneNumbers();
 
 function injectConfirmDialog() {
   // Inject CSS for the dialog
@@ -83,6 +138,13 @@ function injectConfirmDialog() {
     .sippy-dialog-btn-cancel:hover {
       background: #d5d5d5;
     }
+    .sippy-dialog-btn-default {
+      background: #0066cc;
+      color: #fff;
+    }
+    .sippy-dialog-btn-default:hover {
+      background: #0052a3;
+    }
     .sippy-dialog-btn-call {
       background: #28a745;
       color: #fff;
@@ -105,7 +167,8 @@ function showCallConfirmDialog(phoneNumber) {
         <div class="sippy-dialog-number">${phoneNumber}</div>
         <div class="sippy-dialog-buttons">
           <button class="sippy-dialog-btn sippy-dialog-btn-cancel">Abbrechen</button>
-          <button class="sippy-dialog-btn sippy-dialog-btn-call">Anrufen</button>
+          <button class="sippy-dialog-btn sippy-dialog-btn-default">Standard-App</button>
+          <button class="sippy-dialog-btn sippy-dialog-btn-call">Yealink</button>
         </div>
       </div>
     `;
@@ -113,6 +176,7 @@ function showCallConfirmDialog(phoneNumber) {
     document.body.appendChild(overlay);
 
     const cancelBtn = overlay.querySelector('.sippy-dialog-btn-cancel');
+    const defaultBtn = overlay.querySelector('.sippy-dialog-btn-default');
     const callBtn = overlay.querySelector('.sippy-dialog-btn-call');
 
     function cleanup(result) {
@@ -120,22 +184,23 @@ function showCallConfirmDialog(phoneNumber) {
       resolve(result);
     }
 
-    cancelBtn.addEventListener('click', () => cleanup(false));
-    callBtn.addEventListener('click', () => cleanup(true));
+    cancelBtn.addEventListener('click', () => cleanup('cancel'));
+    defaultBtn.addEventListener('click', () => cleanup('default'));
+    callBtn.addEventListener('click', () => cleanup('yealink'));
 
     // Close on overlay click (outside dialog)
     overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) cleanup(false);
+      if (e.target === overlay) cleanup('cancel');
     });
 
     // Close on Escape key
     const handleKeydown = (e) => {
       if (e.key === 'Escape') {
         document.removeEventListener('keydown', handleKeydown);
-        cleanup(false);
+        cleanup('cancel');
       } else if (e.key === 'Enter') {
         document.removeEventListener('keydown', handleKeydown);
-        cleanup(true);
+        cleanup('yealink');
       }
     };
     document.addEventListener('keydown', handleKeydown);
@@ -185,12 +250,16 @@ async function renderPhoneNumbers() {
       if (node.parentNode.tagName === 'A' && node.parentNode.href.includes('tel:')) {
         const telNumber = node.parentNode.href.slice(4).replace(/\+?[^\d+]/g, '');
         const displayNumber = node.textContent || telNumber;
+        console.log('[Sippy Click] Found tel: link:', displayNumber);
         node.parentNode.setAttribute('href', '#');
         node.parentNode.classList.add('sippy-click-touched');
         node.parentNode.removeAttribute('target');
         node.parentNode.addEventListener('click', async (e) => {
           e.preventDefault();
+          e.stopPropagation();
+          console.log('[Sippy Click] Tel link clicked:', displayNumber);
           const confirmed = await showCallConfirmDialog(displayNumber);
+          console.log('[Sippy Click] User confirmed:', confirmed);
           if (confirmed) {
             window.open(callableUri(clickConfiguration, telNumber), '_blank');
           }
@@ -220,7 +289,10 @@ async function renderPhoneNumbers() {
           // Add click handler with confirmation dialog
           anchor.addEventListener('click', async (e) => {
             e.preventDefault();
+            e.stopPropagation();
+            console.log('[Sippy Click] Phone clicked:', phoneNumber);
             const confirmed = await showCallConfirmDialog(phoneNumber);
+            console.log('[Sippy Click] User confirmed:', confirmed);
             if (confirmed) {
               window.open(callableUri(clickConfiguration, cleanNumber), '_blank');
             }
