@@ -2,3 +2,9 @@ node_modules
 distribution
 .parcel-cache
 web-ext-artifacts
+
+# macOS
+.DS_Store
+
+# Test files
+test.html
