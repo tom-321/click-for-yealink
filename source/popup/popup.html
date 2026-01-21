@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sippy Click</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 280px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 12px;
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 12px;
+    }
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+    .header .subtitle {
+      font-size: 11px;
+      color: #666;
+    }
+    .status {
+      text-align: center;
+      padding: 8px;
+      background: #e8f5e9;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #2e7d32;
+    }
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .status.pending {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
+    .dial-section {
+      margin-bottom: 12px;
+    }
+    .dial-input {
+      display: flex;
+      gap: 8px;
+    }
+    .dial-input input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .dial-input input:focus {
+      outline: none;
+      border-color: #0066cc;
+    }
+    .dial-input button {
+      padding: 10px 16px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .dial-input button:hover {
+      background: #218838;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .control-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 8px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .control-btn:hover {
+      background: #f0f0f0;
+      border-color: #bbb;
+    }
+    .control-btn:active {
+      transform: scale(0.95);
+    }
+    .control-btn .icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .control-btn .label {
+      font-size: 10px;
+      color: #666;
+    }
+    .control-btn.danger {
+      background: #ffebee;
+      border-color: #ffcdd2;
+    }
+    .control-btn.danger:hover {
+      background: #ffcdd2;
+    }
+    .control-btn.active {
+      background: #e3f2fd;
+      border-color: #90caf9;
+    }
+    .volume-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 8px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin-bottom: 12px;
+    }
+    .volume-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: #f0f0f0;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .volume-btn:hover {
+      background: #e0e0e0;
+    }
+    .volume-label {
+      font-size: 12px;
+      color: #666;
+    }
+    .footer {
+      text-align: center;
+      padding-top: 8px;
+      border-top: 1px solid #ddd;
+    }
+    .footer a {
+      font-size: 11px;
+      color: #0066cc;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Sippy Click</h1>
+    <div class="subtitle">Yealink Telefon-Steuerung</div>
+  </div>
+
+  <div id="status" class="status pending">Verbindung wird geprüft...</div>
+
+  <div class="dial-section">
+    <div class="dial-input">
+      <input type="tel" id="dialNumber" placeholder="Nummer eingeben...">
+      <button id="dialBtn">📞</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="control-btn danger" id="endCallBtn">
+      <span class="icon">📵</span>
+      <span class="label">Auflegen</span>
+    </button>
+    <button class="control-btn" id="holdBtn">
+      <span class="icon">⏸️</span>
+      <span class="label">Halten</span>
+    </button>
+    <button class="control-btn" id="muteBtn">
+      <span class="icon">🔇</span>
+      <span class="label">Stumm</span>
+    </button>
+    <button class="control-btn" id="speakerBtn">
+      <span class="icon">🔊</span>
+      <span class="label">Lautspr.</span>
+    </button>
+    <button class="control-btn" id="headsetBtn">
+      <span class="icon">🎧</span>
+      <span class="label">Headset</span>
+    </button>
+    <button class="control-btn" id="redialBtn">
+      <span class="icon">🔄</span>
+      <span class="label">Wahlwdh.</span>
+    </button>
+  </div>
+
+  <div class="volume-section">
+    <button class="volume-btn" id="volDownBtn">➖</button>
+    <span class="volume-label">Lautstärke</span>
+    <button class="volume-btn" id="volUpBtn">➕</button>
+  </div>
+
+  <div class="controls">
+    <button class="control-btn" id="dndOnBtn">
+      <span class="icon">🔕</span>
+      <span class="label">DND An</span>
+    </button>
+    <button class="control-btn" id="dndOffBtn">
+      <span class="icon">🔔</span>
+      <span class="label">DND Aus</span>
+    </button>
+    <button class="control-btn" id="settingsBtn">
+      <span class="icon">⚙️</span>
+      <span class="label">Einstellungen</span>
+    </button>
+  </div>
+
+  <div class="footer">
+    <a href="#" id="openSettings">Einstellungen öffnen</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
